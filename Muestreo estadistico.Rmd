@@ -1,0 +1,169 @@
+---
+title: "Estadistica"
+author: "Efrain"
+date: "2022-10-10"
+output: html_document
+---
+
+
+## Librerias
+```{r}
+library(reticulate)
+library(faraway)
+```
+```{python}
+import random as rd
+import pandas as pd
+import numpy as np
+import math as mt
+```
+
+# Transformación de dataframe a python
+```{python}
+iris_py = r.iris
+```
+
+# Muestreo simple con repetición y sin repeticion
+## r
+```{r}
+#generamos los identificadores con repeticion
+flores.elegidas.10.con=sample(1:150,10,replace=TRUE)
+#los disciminamos
+muestra.iris.10.con = iris[flores.elegidas.10.con,]
+head(muestra.iris.10.con)
+
+# sin repeticion
+flores.elegidas.10.sin=sample(1:150,10,replace=FALSE)
+# los discriminamos
+muestra.iris.10.sin=iris[flores.elegidas.10.sin,]
+head(muestra.iris.10.sin)
+```
+## python
+```{python}
+#identificadores sin repeticion
+rows_sin = rd.sample(range(0,150),5)
+#Discriminamos los elementos
+iris_py.iloc[rows_sin,:].head()
+
+#identificadores con repeticion
+rows_con = rd.choices(range(0,150),k=5)
+#Discriminamos los elementos
+iris_py.iloc[rows_con,:].head()
+
+
+#Con pandas puede usarse directamente la funcion sample con y sin repeticion
+iris_py.sample(n=5,replace=True).head()
+iris_py.sample(n=5,replace=False).head()
+```
+
+
+# Muestreo sistematico
+## r
+```{r}
+primera.flor=sample(1:150,1)
+incremento = floor(150/10)
+flores.elegidas.10.sis = seq(from=primera.flor,by=incremento,length.out=10)%%150
+muestra.iris.10.sis = iris[flores.elegidas.10.sis,]
+head(muestra.iris.10.sin)
+```
+## python
+```{python}
+first = rd.randint(0,150)
+incremento = mt.floor(150/10)
+flores_elegidas_sis = np.arange(first,150+first,incremento)%150
+muestra_iris_sis = iris_py.iloc[flores_elegidas_sis,:]
+muestra_iris_sis.head()
+```
+
+
+# Muestreo estratificado
+## r
+```{r}
+fls.muestra.setosa=sample(1:50,4,replace=TRUE)
+fls.muestra.versicolor=sample(51:100,4,replace=TRUE)
+fls.muestra.virginica=sample(101:150,4,replace=TRUE)
+muestra.iris.est=rbind(iris[fls.muestra.setosa,],iris[fls.muestra.versicolor,],iris[fls.muestra.virginica,])
+head(muestra.iris.est)
+```
+## python
+```{python}
+fls_muestra_setosa = iris_py[iris_py.Species == "setosa"].sample(4,replace=True)
+
+fls_muestra_versicolor = iris_py[iris_py.Species == "versicolor"].sample(4,replace=True)
+
+fls_muestra_virginica = iris_py[iris_py.Species == "virginica"].sample(4,replace=True)
+
+muestra_iris_est = pd.concat([fls_muestra_setosa,fls_muestra_versicolor,fls_muestra_virginica])
+muestra_iris_est.head()
+```
+
+
+
+# Muestreo conglomerado
+## r
+```{r}
+#Generamos una muestra simple aleatoria para 4 de los 32 paises
+numero.paises.elegidos=sample(1:32,4,replace=TRUE)
+#Seleccionamos esos 4 paises de una lista sin repetir de ellos
+paises.elegidos=unique(worldcup$Team)[numero.paises.elegidos]
+#Seleccionamos solo esos 4 paises
+muestra.worldcup.con=worldcup[worldcup$Team %in% paises.elegidos,]
+head(muestra.worldcup.con)
+```
+## python
+```{python}
+#Transformamos el dataframe a python
+worldcup_py = r.worldcup
+#Generamos la muestra aleatoria simple
+numero_paises_elegidos = rd.choices(range(0,32),k=4)
+#Seleccionamos los 4 paises
+paises_elegidos = worldcup_py.Team.unique()[numero_paises_elegidos]
+#Creamos la muestra
+muestra_world_cup = worldcup_py[worldcup_py.Team.isin(paises_elegidos)]
+muestra_world_cup.head()
+```
+
+# Muestreo polietapico
+## r
+```{r}
+numero.paises.eleigdos=sample(1:32,4,replace=TRUE)
+paises.elegidos = unique(worldcup$Team)[numero.paises.elegidos]
+worldcup.pais1 = worldcup[worldcup$Team == paises.elegidos[1],]
+worldcup.pais2 = worldcup[worldcup$Team == paises.elegidos[2],]
+worldcup.pais3 = worldcup[worldcup$Team == paises.elegidos[3],]
+worldcup.pais4 = worldcup[worldcup$Team == paises.elegidos[4],]
+
+jugadores.pais1 = sample(1:dim(worldcup.pais1)[1],5,replace=TRUE)
+jugadores.pais2 = sample(1:dim(worldcup.pais2)[1],5,replace=TRUE)
+jugadores.pais3 = sample(1:dim(worldcup.pais3)[1],5,replace=TRUE)
+jugadores.pais4 = sample(1:dim(worldcup.pais4)[1],5,replace=TRUE)
+
+muestra.worldcup.poli = rbind(worldcup.pais1[jugadores.pais1,],
+                              worldcup.pais2[jugadores.pais2,],
+                              worldcup.pais3[jugadores.pais3,],
+                              worldcup.pais4[jugadores.pais4,])
+
+head(muestra.worldcup.poli)
+```
+## python
+```{python}
+numero_paises_elegidos = rd.choices(range(0,32),k=4)
+world_cup_pais1 = worldcup_py[worldcup_py.Team == worldcup_py.Team.unique()[numero_paises_elegidos[0]]]
+
+world_cup_pais2 = worldcup_py[worldcup_py.Team == worldcup_py.Team.unique()[numero_paises_elegidos[1]]]
+
+world_cup_pais3 = worldcup_py[worldcup_py.Team == worldcup_py.Team.unique()[numero_paises_elegidos[2]]]
+
+world_cup_pais4 = worldcup_py[worldcup_py.Team == worldcup_py.Team.unique()[numero_paises_elegidos[3]]]
+
+jugadores_pais1 = world_cup_pais1.sample(5,replace=True)
+jugadores_pais2 = world_cup_pais2.sample(5,replace=True)
+jugadores_pais3 = world_cup_pais3.sample(5,replace=True)
+jugadores_pais4 = world_cup_pais4.sample(5,replace=True)
+
+muestra_worldcup_poli = pd.concat([jugadores_pais1,jugadores_pais2,jugadores_pais3,jugadores_pais4])
+muestra_worldcup_poli.head()
+```
+
+
+
