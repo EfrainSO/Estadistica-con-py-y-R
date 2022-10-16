@@ -1,0 +1,105 @@
+---
+title: "Graficas"
+author: "Efrain"
+date: "2022-10-12"
+output: html_document
+---
+#Librerias
+#r
+```{r, message=FALSE}
+library(reticulate)
+library(ggplot2)
+library(xlsx)
+library(tidyverse)
+```
+#python
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+```
+
+#Lectura de dataframe
+#r
+```{r}
+df = read.xlsx("C:/Users/Efrain/Downloads/instrumento_8.xls",1,header=TRUE)
+df = df[-16,]
+```
+#python
+```{python}
+df_py = pd.read_excel("C:/Users/Efrain/Downloads/instrumento_8.xls")
+```
+
+#Calculo de los porcentajes
+#r
+```{r}
+porcentaje.grupo <- df %>% #incio de creacion de porcentajes
+  group_by(Grupo) %>% # agrupamos las categorias
+  count() %>% # contamos la frecuencia
+  ungroup %>% #desgrupamos para hacer los calculos
+  mutate(porcentaje = n/sum(n)*100) #creamos la columna con los porcentajes
+```
+#python
+```{python}
+# creamos la tabla de frecuencias de las categorias
+porcentaje_grupo = df_py.groupby(["Grupo"]).agg(frecuency=("Grupo","count"))
+# creamos la columna con los porcentajes
+porcentaje_grupo["porcentaje"] = porcentaje_grupo["frecuency"]*100/sum(porcentaje_grupo.frecuency)
+porcentaje_grupo = porcentaje_grupo.reset_index()
+```
+
+#Grafica de pastel
+#r
+```{r}
+ggplot(data=porcentaje.grupo,
+       aes(x=1,y=porcentaje,fill=Grupo))+
+  geom_bar(stat="identity")+
+  geom_text(aes(label = paste0(round(porcentaje,1),"%")),
+            position = position_stack(vjust=0.5))+
+  coord_polar(theta = "y")+
+  theme_void()+
+  labs(title="Porcentaje de la muestra")
+```
+```{r}
+library(plotrix)
+pie3D(porcentaje.grupo$porcentaje,labels=paste(porcentaje.grupo$Grupo,"=",round(porcentaje.grupo$porcentaje,2),"%"),
+      explode=0.1,
+      main="Grafica de pastel")
+```
+
+## python
+```{python}
+plt.pie(porcentaje_grupo.porcentaje,labels=porcentaje_grupo.Grupo,autopct="%0.2f %%")
+plt.show()
+```
+
+# Grafica de puntos
+## r
+
+```{r}
+point <- ggplot(df,aes(x=Género,y=reactivos_c))
+point + geom_point()
+```
+
+```{python}
+plt.scatter(df_py.Género,df_py.reactivos_c)
+plt.show()
+```
+
+# Histrograma de frecuencias
+## r
+```{r}
+example <- data.frame(
+   gender=factor(rep(c(
+     "Average Female income ", "Average Male incmome"), each=20000)),
+   Average_income=round(c(rnorm(20000, mean=15500, sd=500), 
+                          rnorm(20000, mean=17500, sd=600)))   )
+```
+```{r}
+ggplot(example, aes(x=Average_income))+geom_histogram(binwidth = 63,fill="blue")
+```
+
+```{python}
+example_py = r.example
+plt.hist(example_py.Average_income,63)
+plt.show()
+```
