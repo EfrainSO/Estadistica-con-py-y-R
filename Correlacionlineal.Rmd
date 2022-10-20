@@ -1,0 +1,65 @@
+---
+title: "Tema 3"
+author: "Efrain"
+date: "2022-10-19"
+output: html_document
+---
+
+## Librerias
+```{r,message=FALSE}
+library(reticulate)
+library(PerformanceAnalytics)
+library(visreg)
+#usamos el dataset CO2
+```
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as snb
+CO2_py = r.CO2
+```
+
+# Represacion de datos bivariados
+
+```{r}
+# Tabla de contingencia, doble cualitativa
+(ConTable <- table(CO2$Plant,CO2$Type))
+# Grafico de caja, cuantitativa y cualitativa
+par(mfrow = c(1,2))
+caja <- boxplot(formula = uptake~Plant,data = CO2)
+# Diagrama de dispersion, doble cuantitativa
+plot(x= CO2$conc, y= CO2$uptake)
+par(mfrow=c(1,1))
+```
+
+```{python}
+# Tabla de contingencia, doble cualitativa
+pd.crosstab(CO2_py.Plant,CO2_py.Type)
+# Grafico de caja, cuantitativa cualitativa
+plt.subplot(1,2,1)
+snb.boxplot(data=CO2_py,x="uptake",y="Plant")
+plt.xticks(rotation = 90)
+# Diagrama de dispersion, doble cualitativa
+plt.subplot(1,2,2)
+plt.scatter(CO2_py.conc,CO2_py.uptake)
+plt.show()
+
+```
+## Correlacion y regresion lineal
+```{r}
+#Correlacion de Pearson
+chart.Correlation(CO2[c("conc","uptake")])
+#Regresion lineal
+reg1 <- lm(conc~uptake,data=CO2)
+summary(reg1)
+par(mfrow = c(2, 2))
+plot(reg1)
+visreg(reg1)
+
+```
+```{python}
+CO2_py[["conc","uptake"]].corr()
+plt.matshow(CO2_py[["conc","uptake"]].corr(), interpolation ='nearest')
+plt.show()
+```
+ 
